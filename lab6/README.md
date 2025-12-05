@@ -1,0 +1,1300 @@
+# Исследование вредоносной активности в домене Windows
+iablokovasofia@yandex.ru
+
+## Цель работы:
+
+1.  Закрепить навыки исследования данных журнала Windows Active
+    Directory
+2.  Изучить структуру журнала системы Windows Active Directory
+3.  Зекрепить практические навыки использования языка программирования R
+    для обработки данных
+4.  Закрепить знания основных функций обработки данных экосистемы
+    tidyverse языка R
+
+## Исходные данные
+
+1.  Программное обеспечение Windows 10
+2.  Rstudio Desktop
+3.  Наше рабочее окружение
+
+``` r
+sessionInfo()
+```
+
+    R version 4.5.1 (2025-06-13 ucrt)
+    Platform: x86_64-w64-mingw32/x64
+    Running under: Windows 10 x64 (build 19045)
+
+    Matrix products: default
+      LAPACK version 3.12.1
+
+    locale:
+    [1] LC_COLLATE=Russian_Russia.utf8  LC_CTYPE=Russian_Russia.utf8   
+    [3] LC_MONETARY=Russian_Russia.utf8 LC_NUMERIC=C                   
+    [5] LC_TIME=Russian_Russia.utf8    
+
+    time zone: Europe/Moscow
+    tzcode source: internal
+
+    attached base packages:
+    [1] stats     graphics  grDevices utils     datasets  methods   base     
+
+    loaded via a namespace (and not attached):
+     [1] compiler_4.5.1    fastmap_1.2.0     cli_3.6.5         tools_4.5.1      
+     [5] htmltools_0.5.8.1 rstudioapi_0.17.1 yaml_2.3.10       rmarkdown_2.30   
+     [9] knitr_1.50        jsonlite_2.0.0    xfun_0.53         digest_0.6.37    
+    [13] rlang_1.1.6       evaluate_1.0.5   
+
+## План
+
+Используя R и среду разработки RstudioIDE, выполнить задания.
+
+## Шаги:
+
+    [Workspace loaded from ~/myrepoz/.RData]
+
+    > 
+    > install.packages("tidyverse")
+    WARNING: Rtools is required to build R packages but is not currently installed. Please download and install the appropriate version of Rtools before proceeding:
+
+    https://cran.rstudio.com/bin/windows/Rtools/
+    Устанавливаю пакет в ‘C:/Users/София/AppData/Local/R/win-library/4.5’
+    (потому что ‘lib’ не определено)
+    пробую URL 'https://mirror.truenetwork.ru/CRAN/bin/windows/contrib/4.5/tidyverse_2.0.0.zip'
+    Content type 'application/zip' length 431564 bytes (421 KB)
+    downloaded 421 KB
+
+    пакет ‘tidyverse’ успешно распакован, MD5-суммы проверены
+
+    Скачанные бинарные пакеты находятся в
+        C:\Users\София\AppData\Local\Temp\Rtmp8OfKUq\downloaded_packages
+    > install.packages("jsonlite")
+    WARNING: Rtools is required to build R packages but is not currently installed. Please download and install the appropriate version of Rtools before proceeding:
+
+    https://cran.rstudio.com/bin/windows/Rtools/
+    Устанавливаю пакет в ‘C:/Users/София/AppData/Local/R/win-library/4.5’
+    (потому что ‘lib’ не определено)
+    пробую URL 'https://mirror.truenetwork.ru/CRAN/bin/windows/contrib/4.5/jsonlite_2.0.0.zip'
+    Content type 'application/zip' length 1110765 bytes (1.1 MB)
+    downloaded 1.1 MB
+
+    пакет ‘jsonlite’ успешно распакован, MD5-суммы проверены
+
+    Скачанные бинарные пакеты находятся в
+        C:\Users\София\AppData\Local\Temp\Rtmp8OfKUq\downloaded_packages
+    > install.packages("xml2")
+    WARNING: Rtools is required to build R packages but is not currently installed. Please download and install the appropriate version of Rtools before proceeding:
+
+    https://cran.rstudio.com/bin/windows/Rtools/
+    Устанавливаю пакет в ‘C:/Users/София/AppData/Local/R/win-library/4.5’
+    (потому что ‘lib’ не определено)
+    пробую URL 'https://mirror.truenetwork.ru/CRAN/bin/windows/contrib/4.5/xml2_1.5.1.zip'
+    Content type 'application/zip' length 1620881 bytes (1.5 MB)
+    downloaded 1.5 MB
+
+    пакет ‘xml2’ успешно распакован, MD5-суммы проверены
+
+    Скачанные бинарные пакеты находятся в
+        C:\Users\София\AppData\Local\Temp\Rtmp8OfKUq\downloaded_packages
+    > install.packages("rvest")
+    WARNING: Rtools is required to build R packages but is not currently installed. Please download and install the appropriate version of Rtools before proceeding:
+
+    https://cran.rstudio.com/bin/windows/Rtools/
+    Устанавливаю пакет в ‘C:/Users/София/AppData/Local/R/win-library/4.5’
+    (потому что ‘lib’ не определено)
+    пробую URL 'https://mirror.truenetwork.ru/CRAN/bin/windows/contrib/4.5/rvest_1.0.5.zip'
+    Content type 'application/zip' length 318766 bytes (311 KB)
+    downloaded 311 KB
+
+    пакет ‘rvest’ успешно распакован, MD5-суммы проверены
+
+    Скачанные бинарные пакеты находятся в
+        C:\Users\София\AppData\Local\Temp\Rtmp8OfKUq\downloaded_packages
+    > install.packages("tidyr")
+    WARNING: Rtools is required to build R packages but is not currently installed. Please download and install the appropriate version of Rtools before proceeding:
+
+    https://cran.rstudio.com/bin/windows/Rtools/
+    Устанавливаю пакет в ‘C:/Users/София/AppData/Local/R/win-library/4.5’
+    (потому что ‘lib’ не определено)
+    пробую URL 'https://mirror.truenetwork.ru/CRAN/bin/windows/contrib/4.5/tidyr_1.3.1.zip'
+    Content type 'application/zip' length 1276983 bytes (1.2 MB)
+    downloaded 1.2 MB
+
+    пакет ‘tidyr’ успешно распакован, MD5-суммы проверены
+
+    Скачанные бинарные пакеты находятся в
+        C:\Users\София\AppData\Local\Temp\Rtmp8OfKUq\downloaded_packages
+    > install.packages("dplyr")
+    WARNING: Rtools is required to build R packages but is not currently installed. Please download and install the appropriate version of Rtools before proceeding:
+
+    https://cran.rstudio.com/bin/windows/Rtools/
+    Устанавливаю пакет в ‘C:/Users/София/AppData/Local/R/win-library/4.5’
+    (потому что ‘lib’ не определено)
+    пробую URL 'https://mirror.truenetwork.ru/CRAN/bin/windows/contrib/4.5/dplyr_1.1.4.zip'
+    Content type 'application/zip' length 1593482 bytes (1.5 MB)
+    downloaded 1.5 MB
+
+    пакет ‘dplyr’ успешно распакован, MD5-суммы проверены
+
+    Скачанные бинарные пакеты находятся в
+        C:\Users\София\AppData\Local\Temp\Rtmp8OfKUq\downloaded_packages
+    > install.packages("readr")
+    WARNING: Rtools is required to build R packages but is not currently installed. Please download and install the appropriate version of Rtools before proceeding:
+
+    https://cran.rstudio.com/bin/windows/Rtools/
+    Устанавливаю пакет в ‘C:/Users/София/AppData/Local/R/win-library/4.5’
+    (потому что ‘lib’ не определено)
+    пробую URL 'https://mirror.truenetwork.ru/CRAN/bin/windows/contrib/4.5/readr_2.1.6.zip'
+    Content type 'application/zip' length 1238420 bytes (1.2 MB)
+    downloaded 1.2 MB
+
+    пакет ‘readr’ успешно распакован, MD5-суммы проверены
+
+    Скачанные бинарные пакеты находятся в
+        C:\Users\София\AppData\Local\Temp\Rtmp8OfKUq\downloaded_packages
+    > install.packages("purrr")
+    WARNING: Rtools is required to build R packages but is not currently installed. Please download and install the appropriate version of Rtools before proceeding:
+
+    https://cran.rstudio.com/bin/windows/Rtools/
+    Устанавливаю пакет в ‘C:/Users/София/AppData/Local/R/win-library/4.5’
+    (потому что ‘lib’ не определено)
+    пробую URL 'https://mirror.truenetwork.ru/CRAN/bin/windows/contrib/4.5/purrr_1.2.0.zip'
+    Content type 'application/zip' length 571739 bytes (558 KB)
+    downloaded 558 KB
+
+    пакет ‘purrr’ успешно распакован, MD5-суммы проверены
+
+    Скачанные бинарные пакеты находятся в
+        C:\Users\София\AppData\Local\Temp\Rtmp8OfKUq\downloaded_packages
+    > 
+    > library(tidyverse)
+    ── Attaching core tidyverse packages ─────────────────────────── tidyverse 2.0.0 ──
+    ✔ dplyr     1.1.4     ✔ readr     2.1.6
+    ✔ forcats   1.0.1     ✔ stringr   1.5.2
+    ✔ ggplot2   4.0.0     ✔ tibble    3.3.0
+    ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+    ✔ purrr     1.2.0     
+    ── Conflicts ───────────────────────────────────────────── tidyverse_conflicts() ──
+    ✖ dplyr::filter() masks stats::filter()
+    ✖ dplyr::lag()    masks stats::lag()
+    ℹ Use the conflicted package to force all conflicts to become errors
+    Предупреждения:
+    1: пакет ‘tidyverse’ был собран под R версии 4.5.2 
+    2: пакет ‘tidyr’ был собран под R версии 4.5.2 
+    3: пакет ‘readr’ был собран под R версии 4.5.2 
+    4: пакет ‘purrr’ был собран под R версии 4.5.2 
+    5: пакет ‘dplyr’ был собран под R версии 4.5.2 
+    6: пакет ‘lubridate’ был собран под R версии 4.5.2 
+    > library(jsonlite)
+
+    Присоединяю пакет: ‘jsonlite’
+
+    Следующий объект скрыт от ‘package:purrr’:
+
+        flatten
+
+    Предупреждение:
+    пакет ‘jsonlite’ был собран под R версии 4.5.2 
+
+    > library(xml2)
+    Предупреждение:
+    пакет ‘xml2’ был собран под R версии 4.5.2 
+
+    > library(rvest)
+
+    Присоединяю пакет: ‘rvest’
+
+    Следующий объект скрыт от ‘package:readr’:
+
+        guess_encoding
+
+    Предупреждение:
+    пакет ‘rvest’ был собран под R версии 4.5.2 
+
+    > library(tidyr)
+    > library(dplyr)
+    > library(readr)
+    > library(purrr)
+    > 
+    > temp_dir <- tempdir()
+    > dataset_url <- "https://storage.yandexcloud.net/iamcth-data/dataset.tar.gz"
+    > download.file(dataset_url, file.path(temp_dir, "dataset.tar.gz"))
+    пробую URL 'https://storage.yandexcloud.net/iamcth-data/dataset.tar.gz'
+    Content type 'application/gzip' length 12608123 bytes (12.0 MB)
+    downloaded 12.0 MB
+
+    > untar(file.path(temp_dir, "dataset.tar.gz"), exdir = temp_dir)
+    > json_files <- list.files(temp_dir, pattern = "\\.json$", full.names = TRUE, recursive = TRUE)
+    > if (length(json_files) == 1) {
+    + log_data <- stream_in(file(json_files[1]))
+    + } else {
+    + log_data <- map_dfr(json_files, ~ stream_in(file(.x)))
+    + }
+    opening file input connection.
+     Imported 101904 records. Simplifying...
+    closing file input connection.
+    > 
+    > # 1. Импортируйте данные в R.
+    > webpage_url <- "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/appendix-l-events-to-monitor"
+    > webpage <- xml2::read_html(webpage_url)
+    Ошибка в open.connection(x, "rb") : не могу открыть соединение
+
+    > webpage_url <- "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/appendix-l--events-to-monitor"
+    > webpage <- xml2::read_html(webpage_url)
+    > tables <- rvest::html_table(webpage)
+    > event_df <- tables[[1]]
+    > glimpse(event_df)
+    Rows: 381
+    Columns: 4
+    $ `Current Windows Event ID` <chr> "4618", "4649", "4719", "4765", "4766", "4794"…
+    $ `Legacy Windows Event ID`  <chr> "N/A", "N/A", "612", "N/A", "N/A", "N/A", "801…
+    $ `Potential Criticality`    <chr> "High", "High", "High", "High", "High", "High"…
+    $ `Event Summary`            <chr> "A monitored security event pattern has occurr…
+    > colnames(event_df) <- make.names(colnames(event_df))
+    > #2Привести датасеты в вид “аккуратных данных”, преобразовать типы столбцов в соответствии с типом данных
+    > glimpse(log_data)
+    Rows: 101,904
+    Columns: 9
+    $ `@timestamp` <chr> "2019-10-20T20:11:06.937Z", "2019-10-20T20:11:07.101Z", "201…
+    $ `@metadata`  <df[,4]> <data.frame[27 x 4]>
+    $ event        <df[,4]> <data.frame[27 x 4]>
+    $ log          <df[,1]> <data.frame[27 x 1]>
+    $ message      <chr> "A token right was adjusted.\n\nSubject:\n\tSecurity ID:\…
+    $ winlog       <df[,16]> <data.frame[27 x 16]>
+    $ ecs          <df[,1]> <data.frame[27 x 1]>
+    $ host         <df[,1]> <data.frame[27 x 1]>
+    $ agent        <df[,5]> <data.frame[27 x 5]>
+    > 
+    > cat("Размерность данных:", dim(log_data), "\n")
+    Размерность данных: 101904 9 
+    > head(log_data)
+                    @timestamp @metadata.beat @metadata.type @metadata.version
+    1 2019-10-20T20:11:06.937Z     winlogbeat           _doc             7.4.0
+    2 2019-10-20T20:11:07.101Z     winlogbeat           _doc             7.4.0
+    3 2019-10-20T20:11:09.052Z     winlogbeat           _doc             7.4.0
+      @metadata.topic            event.created event.kind event.code
+    1      winlogbeat 2019-10-20T20:11:09.988Z      event       4703
+    2      winlogbeat 2019-10-20T20:11:09.988Z      event       4673
+    3      winlogbeat 2019-10-20T20:11:11.995Z      event         10
+                                event.action       level
+    1            Token Right Adjusted Events information
+    2                Sensitive Privilege Use information
+    3 Process accessed (rule: ProcessAccess) information
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        message
+    1                                                                                                                                                                                                                                                                                                                                                                                                               A token right was adjusted.\n\nSubject:\n\tSecurity ID:\t\tS-1-5-18\n\tAccount Name:\t\tHR001$\n\tAccount Domain:\t\tshire\n\tLogon ID:\t\t0x3E7\n\nTarget Account:\n\tSecurity ID:\t\tS-1-5-18\n\tAccount Name:\t\tHR001$\n\tAccount Domain:\t\tshire\n\tLogon ID:\t\t0x3E7\n\nProcess Information:\n\tProcess ID:\t\t0x804\n\tProcess Name:\t\tC:\\Windows\\System32\\svchost.exe\n\nEnabled Privileges:\n\t\t\tSeTakeOwnershipPrivilege\n\nDisabled Privileges:\n\t\t\t-
+    2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         A privileged service was called.\n\nSubject:\n\tSecurity ID:\t\tS-1-5-19\n\tAccount Name:\t\tLOCAL SERVICE\n\tAccount Domain:\t\tNT AUTHORITY\n\tLogon ID:\t\t0x3E5\n\nService:\n\tServer:\tSecurity\n\tService Name:\t-\n\nProcess:\n\tProcess ID:\t0x494\n\tProcess Name:\tC:\\Windows\\System32\\svchost.exe\n\nService Request Information:\n\tPrivileges:\t\tSeProfileSingleProcessPrivilege
+    3                                            Process accessed:\nRuleName: \nUtcTime: 2019-10-20 20:11:09.052\nSourceProcessGUID: {a158f72c-afec-5dac-0000-001030640200}\nSourceProcessId: 3556\nSourceThreadId: 3688\nSourceImage: C:\\Windows\\System32\\svchost.exe\nTargetProcessGUID: {a158f72c-afeb-5dac-0000-001082220200}\nTargetProcessId: 3108\nTargetImage: C:\\Program Files\\Amazon\\Ec2ConfigService\\Ec2Config.exe\nGrantedAccess: 0x1400\nCallTrace: C:\\Windows\\SYSTEM32\\ntdll.dll+9c524|C:\\Windows\\System32\\KERNELBASE.dll+2730e|c:\\windows\\system32\\rasmans.dll+3751b|c:\\windows\\system32\\rasmans.dll+36fad|c:\\windows\\system32\\rasmans.dll+10ed8|c:\\windows\\system32\\rasmans.dll+33cd5|C:\\Windows\\System32\\svchost.exe+314c|C:\\Windows\\System32\\sechost.dll+2de2|C:\\Windows\\System32\\KERNEL32.DLL+17944|C:\\Windows\\SYSTEM32\\ntdll.dll+6ce71
+      winlog.event_data.SubjectDomainName winlog.event_data.TargetDomainName
+    1                               shire                              shire
+    2                        NT AUTHORITY                               <NA>
+    3                                <NA>                               <NA>
+      winlog.event_data.SubjectUserSid winlog.event_data.SubjectUserName
+    1                         S-1-5-18                            HR001$
+    2                         S-1-5-19                     LOCAL SERVICE
+    3                             <NA>                              <NA>
+      winlog.event_data.TargetUserName winlog.event_data.EnabledPrivilegeList
+    1                           HR001$               SeTakeOwnershipPrivilege
+    2                             <NA>                                   <NA>
+    3                             <NA>                                   <NA>
+      winlog.event_data.TargetLogonId      winlog.event_data.ProcessName
+    1                           0x3e7 C:\\Windows\\System32\\svchost.exe
+    2                            <NA> C:\\Windows\\System32\\svchost.exe
+    3                            <NA>                               <NA>
+      winlog.event_data.ProcessId winlog.event_data.SubjectLogonId
+    1                       0x804                            0x3e7
+    2                       0x494                            0x3e5
+    3                        <NA>                             <NA>
+      winlog.event_data.TargetUserSid winlog.event_data.DisabledPrivilegeList
+    1                        S-1-5-18                                       -
+    2                            <NA>                                    <NA>
+    3                            <NA>                                    <NA>
+      winlog.event_data.ObjectServer winlog.event_data.Service
+    1                           <NA>                      <NA>
+    2                       Security                         -
+    3                           <NA>                      <NA>
+      winlog.event_data.PrivilegeList winlog.event_data.TargetProcessId
+    1                            <NA>                              <NA>
+    2 SeProfileSingleProcessPrivilege                              <NA>
+    3                            <NA>                              3108
+      winlog.event_data.SourceProcessId    winlog.event_data.SourceProcessGUID
+    1                              <NA>                                   <NA>
+    2                              <NA>                                   <NA>
+    3                              3556 {a158f72c-afec-5dac-0000-001030640200}
+      winlog.event_data.SourceThreadId
+    1                             <NA>
+    2                             <NA>
+    3                             3688
+                                                           winlog.event_data.SourceImage
+    1                                                                               <NA>
+    2                                                                               <NA>
+    3                                                 C:\\Windows\\System32\\svchost.exe
+                                                                                                                                                                                                                                                                                                                                                                                                  winlog.event_data.CallTrace
+    1                                                                                                                                                                                                                                                                                                                                                                                                                    <NA>
+    2                                                                                                                                                                                                                                                                                                                                                                                                                    <NA>
+    3 C:\\Windows\\SYSTEM32\\ntdll.dll+9c524|C:\\Windows\\System32\\KERNELBASE.dll+2730e|c:\\windows\\system32\\rasmans.dll+3751b|c:\\windows\\system32\\rasmans.dll+36fad|c:\\windows\\system32\\rasmans.dll+10ed8|c:\\windows\\system32\\rasmans.dll+33cd5|C:\\Windows\\System32\\svchost.exe+314c|C:\\Windows\\System32\\sechost.dll+2de2|C:\\Windows\\System32\\KERNEL32.DLL+17944|C:\\Windows\\SYSTEM32\\ntdll.dll+6ce71
+         winlog.event_data.TargetProcessGUID
+    1                                   <NA>
+    2                                   <NA>
+    3 {a158f72c-afeb-5dac-0000-001082220200}
+                                                          winlog.event_data.TargetImage
+    1                                                                              <NA>
+    2                                                                              <NA>
+    3                        C:\\Program Files\\Amazon\\Ec2ConfigService\\Ec2Config.exe
+      winlog.event_data.GrantedAccess winlog.event_data.UtcTime
+    1                            <NA>                      <NA>
+    2                            <NA>                      <NA>
+    3                          0x1400   2019-10-20 20:11:09.052
+      winlog.event_data.ProcessGuid winlog.event_data.Image
+    1                          <NA>                    <NA>
+    2                          <NA>                    <NA>
+    3                          <NA>                    <NA>
+      winlog.event_data.TargetFilename winlog.event_data.CreationUtcTime
+    1                             <NA>                              <NA>
+    2                             <NA>                              <NA>
+    3                             <NA>                              <NA>
+      winlog.event_data.FileVersion winlog.event_data.Company winlog.event_data.Signed
+    1                          <NA>                      <NA>                     <NA>
+    2                          <NA>                      <NA>                     <NA>
+    3                          <NA>                      <NA>                     <NA>
+      winlog.event_data.Signature winlog.event_data.OriginalFileName
+    1                        <NA>                               <NA>
+    2                        <NA>                               <NA>
+    3                        <NA>                               <NA>
+      winlog.event_data.Description winlog.event_data.Product
+    1                          <NA>                      <NA>
+    2                          <NA>                      <NA>
+    3                          <NA>                      <NA>
+      winlog.event_data.ImageLoaded winlog.event_data.SignatureStatus
+    1                          <NA>                              <NA>
+    2                          <NA>                              <NA>
+    3                          <NA>                              <NA>
+      winlog.event_data.Hashes winlog.event_data.Status winlog.event_data.Protocol
+    1                     <NA>                     <NA>                       <NA>
+    2                     <NA>                     <NA>                       <NA>
+    3                     <NA>                     <NA>                       <NA>
+      winlog.event_data.FilterRTID winlog.event_data.LayerName
+    1                         <NA>                        <NA>
+    2                         <NA>                        <NA>
+    3                         <NA>                        <NA>
+      winlog.event_data.LayerRTID winlog.event_data.Application
+    1                        <NA>                          <NA>
+    2                        <NA>                          <NA>
+    3                        <NA>                          <NA>
+      winlog.event_data.SourceAddress winlog.event_data.SourcePort
+    1                            <NA>                         <NA>
+    2                            <NA>                         <NA>
+    3                            <NA>                         <NA>
+      winlog.event_data.ProcessID winlog.event_data.DestPort
+    1                        <NA>                       <NA>
+    2                        <NA>                       <NA>
+    3                        <NA>                       <NA>
+      winlog.event_data.RemoteMachineID winlog.event_data.RemoteUserID
+    1                              <NA>                           <NA>
+    2                              <NA>                           <NA>
+    3                              <NA>                           <NA>
+      winlog.event_data.Direction winlog.event_data.DestAddress
+    1                        <NA>                          <NA>
+    2                        <NA>                          <NA>
+    3                        <NA>                          <NA>
+      winlog.event_data.RestrictedAdminMode winlog.event_data.TransmittedServices
+    1                                  <NA>                                  <NA>
+    2                                  <NA>                                  <NA>
+    3                                  <NA>                                  <NA>
+      winlog.event_data.LogonType winlog.event_data.WorkstationName
+    1                        <NA>                              <NA>
+    2                        <NA>                              <NA>
+    3                        <NA>                              <NA>
+      winlog.event_data.LmPackageName winlog.event_data.KeyLength
+    1                            <NA>                        <NA>
+    2                            <NA>                        <NA>
+    3                            <NA>                        <NA>
+      winlog.event_data.LogonGuid winlog.event_data.ImpersonationLevel
+    1                        <NA>                                 <NA>
+    2                        <NA>                                 <NA>
+    3                        <NA>                                 <NA>
+      winlog.event_data.TargetOutboundDomainName winlog.event_data.TargetLinkedLogonId
+    1                                       <NA>                                  <NA>
+    2                                       <NA>                                  <NA>
+    3                                       <NA>                                  <NA>
+      winlog.event_data.AuthenticationPackageName
+    1                                        <NA>
+    2                                        <NA>
+    3                                        <NA>
+      winlog.event_data.TargetOutboundUserName winlog.event_data.VirtualAccount
+    1                                     <NA>                             <NA>
+    2                                     <NA>                             <NA>
+    3                                     <NA>                             <NA>
+      winlog.event_data.IpAddress winlog.event_data.ElevatedToken
+    1                        <NA>                            <NA>
+    2                        <NA>                            <NA>
+    3                        <NA>                            <NA>
+      winlog.event_data.LogonProcessName winlog.event_data.IpPort
+    1                               <NA>                     <NA>
+    2                               <NA>                     <NA>
+    3                               <NA>                     <NA>
+      winlog.event_data.GroupMembership winlog.event_data.EventIdx
+    1                              <NA>                       <NA>
+    2                              <NA>                       <NA>
+    3                              <NA>                       <NA>
+      winlog.event_data.EventCountTotal winlog.event_data.EventType
+    1                              <NA>                        <NA>
+    2                              <NA>                        <NA>
+    3                              <NA>                        <NA>
+      winlog.event_data.TargetObject winlog.event_data.DestinationPort
+    1                           <NA>                              <NA>
+    2                           <NA>                              <NA>
+    3                           <NA>                              <NA>
+      winlog.event_data.DestinationIsIpv6 winlog.event_data.SourceIp
+    1                                <NA>                       <NA>
+    2                                <NA>                       <NA>
+    3                                <NA>                       <NA>
+      winlog.event_data.User winlog.event_data.SourceIsIpv6
+    1                   <NA>                           <NA>
+    2                   <NA>                           <NA>
+    3                   <NA>                           <NA>
+      winlog.event_data.DestinationIp winlog.event_data.SourceHostname
+    1                            <NA>                             <NA>
+    2                            <NA>                             <NA>
+    3                            <NA>                             <NA>
+      winlog.event_data.DestinationHostname winlog.event_data.DestinationPortName
+    1                                  <NA>                                  <NA>
+    2                                  <NA>                                  <NA>
+    3                                  <NA>                                  <NA>
+      winlog.event_data.Initiated winlog.event_data.param3 winlog.event_data.param2
+    1                        <NA>                     <NA>                     <NA>
+    2                        <NA>                     <NA>                     <NA>
+    3                        <NA>                     <NA>                     <NA>
+      winlog.event_data.param1 winlog.event_data.ParentProcessId
+    1                     <NA>                              <NA>
+    2                     <NA>                              <NA>
+    3                     <NA>                              <NA>
+      winlog.event_data.ParentProcessGuid winlog.event_data.ParentCommandLine
+    1                                <NA>                                <NA>
+    2                                <NA>                                <NA>
+    3                                <NA>                                <NA>
+      winlog.event_data.CommandLine winlog.event_data.CurrentDirectory
+    1                          <NA>                               <NA>
+    2                          <NA>                               <NA>
+    3                          <NA>                               <NA>
+      winlog.event_data.TerminalSessionId winlog.event_data.ParentImage
+    1                                <NA>                          <NA>
+    2                                <NA>                          <NA>
+    3                                <NA>                          <NA>
+      winlog.event_data.LogonId winlog.event_data.IntegrityLevel
+    1                      <NA>                             <NA>
+    2                      <NA>                             <NA>
+    3                      <NA>                             <NA>
+      winlog.event_data.PipeName winlog.event_data.ScriptBlockId
+    1                       <NA>                            <NA>
+    2                       <NA>                            <NA>
+    3                       <NA>                            <NA>
+      winlog.event_data.RunspaceId winlog.event_data.ContextInfo
+    1                         <NA>                          <NA>
+    2                         <NA>                          <NA>
+    3                         <NA>                          <NA>
+      winlog.event_data.Payload winlog.event_data.MessageNumber
+    1                      <NA>                            <NA>
+    2                      <NA>                            <NA>
+    3                      <NA>                            <NA>
+      winlog.event_data.MessageTotal winlog.event_data.ScriptBlockText
+    1                           <NA>                              <NA>
+    2                           <NA>                              <NA>
+    3                           <NA>                              <NA>
+      winlog.event_data.NewProcessId winlog.event_data.NewProcessName
+    1                           <NA>                             <NA>
+    2                           <NA>                             <NA>
+    3                           <NA>                             <NA>
+      winlog.event_data.MandatoryLabel winlog.event_data.ParentProcessName
+    1                             <NA>                                <NA>
+    2                             <NA>                                <NA>
+    3                             <NA>                                <NA>
+      winlog.event_data.TokenElevationType winlog.event_data.ServiceName
+    1                                 <NA>                          <NA>
+    2                                 <NA>                          <NA>
+    3                                 <NA>                          <NA>
+      winlog.event_data.ServiceSid winlog.event_data.TicketOptions
+    1                         <NA>                            <NA>
+    2                         <NA>                            <NA>
+    3                         <NA>                            <NA>
+      winlog.event_data.TicketEncryptionType winlog.event_data.QueryName
+    1                                   <NA>                        <NA>
+    2                                   <NA>                        <NA>
+    3                                   <NA>                        <NA>
+      winlog.event_data.QueryStatus winlog.event_data.QueryResults
+    1                          <NA>                           <NA>
+    2                          <NA>                           <NA>
+    3                          <NA>                           <NA>
+      winlog.event_data.SourcePortName winlog.event_data.Device
+    1                             <NA>                     <NA>
+    2                             <NA>                     <NA>
+    3                             <NA>                     <NA>
+      winlog.event_data.Details winlog.event_data.ObjectName winlog.event_data.OldSd
+    1                      <NA>                         <NA>                    <NA>
+    2                      <NA>                         <NA>                    <NA>
+    3                      <NA>                         <NA>                    <NA>
+      winlog.event_data.NewSd winlog.event_data.ObjectType winlog.event_data.HandleId
+    1                    <NA>                         <NA>                       <NA>
+    2                    <NA>                         <NA>                       <NA>
+    3                    <NA>                         <NA>                       <NA>
+      winlog.event_data.ShareName winlog.event_data.AccessList
+    1                        <NA>                         <NA>
+    2                        <NA>                         <NA>
+    3                        <NA>                         <NA>
+      winlog.event_data.ShareLocalPath winlog.event_data.AccessMask
+    1                             <NA>                         <NA>
+    2                             <NA>                         <NA>
+    3                             <NA>                         <NA>
+      winlog.event_data.AccessReason winlog.event_data.RelativeTargetName
+    1                           <NA>                                 <NA>
+    2                           <NA>                                 <NA>
+    3                           <NA>                                 <NA>
+      winlog.event_data.Properties winlog.event_data.AdditionalInfo2
+    1                         <NA>                              <NA>
+    2                         <NA>                              <NA>
+    3                         <NA>                              <NA>
+      winlog.event_data.OperationType winlog.event_data.AdditionalInfo
+    1                            <NA>                             <NA>
+    2                            <NA>                             <NA>
+    3                            <NA>                             <NA>
+      winlog.event_data.Path winlog.event_data.TargetHandleId
+    1                   <NA>                             <NA>
+    2                   <NA>                             <NA>
+    3                   <NA>                             <NA>
+      winlog.event_data.SourceHandleId winlog.event_data.TransactionId
+    1                             <NA>                            <NA>
+    2                             <NA>                            <NA>
+    3                             <NA>                            <NA>
+      winlog.event_data.RestrictedSidCount winlog.event_data.ResourceAttributes
+    1                                 <NA>                                 <NA>
+    2                                 <NA>                                 <NA>
+    3                                 <NA>                                 <NA>
+      winlog.event_data.Binary winlog.event_data.PreviousCreationUtcTime
+    1                     <NA>                                      <NA>
+    2                     <NA>                                      <NA>
+    3                     <NA>                                      <NA>
+      winlog.event_data.CallerProcessId winlog.event_data.CallerProcessName
+    1                              <NA>                                <NA>
+    2                              <NA>                                <NA>
+    3                              <NA>                                <NA>
+      winlog.event_data.TargetSid winlog.event_data.TaskName
+    1                        <NA>                       <NA>
+    2                        <NA>                       <NA>
+    3                        <NA>                       <NA>
+      winlog.event_data.TaskContentNew winlog.event_data.SourceProcessGuid
+    1                             <NA>                                <NA>
+    2                             <NA>                                <NA>
+    3                             <NA>                                <NA>
+      winlog.event_data.TargetProcessGuid winlog.event_data.StartAddress
+    1                                <NA>                           <NA>
+    2                                <NA>                           <NA>
+    3                                <NA>                           <NA>
+      winlog.event_data.NewThreadId winlog.event_data.TaskContent
+    1                          <NA>                          <NA>
+    2                          <NA>                          <NA>
+    3                          <NA>                          <NA>
+      winlog.event_data.PackageName winlog.event_data.Workstation
+    1                          <NA>                          <NA>
+    2                          <NA>                          <NA>
+    3                          <NA>                          <NA>
+      winlog.event_data.param4 winlog.event_data.param5 winlog.event_data.param7
+    1                     <NA>                     <NA>                     <NA>
+    2                     <NA>                     <NA>                     <NA>
+    3                     <NA>                     <NA>                     <NA>
+      winlog.event_data.StartModule winlog.event_data.StartFunction
+    1                          <NA>                            <NA>
+    2                          <NA>                            <NA>
+    3                          <NA>                            <NA>
+      winlog.event_data.TSId winlog.event_data.UserSid winlog.event_data.PreAuthType
+    1                   <NA>                      <NA>                          <NA>
+    2                   <NA>                      <NA>                          <NA>
+    3                   <NA>                      <NA>                          <NA>
+      winlog.event_data.PreviousTime winlog.event_data.NewTime
+    1                           <NA>                      <NA>
+    2                           <NA>                      <NA>
+    3                           <NA>                      <NA>
+      winlog.event_data.InterfaceName winlog.event_data.OldProfile
+    1                            <NA>                         <NA>
+    2                            <NA>                         <NA>
+    3                            <NA>                         <NA>
+      winlog.event_data.NewProfile winlog.event_data.InterfaceGuid
+    1                         <NA>                            <NA>
+    2                         <NA>                            <NA>
+    3                         <NA>                            <NA>
+      winlog.event_data.SettingType winlog.event_data.SettingValueSize
+    1                          <NA>                               <NA>
+    2                          <NA>                               <NA>
+    3                          <NA>                               <NA>
+      winlog.event_data.SettingValue winlog.event_data.SettingValueDisplay
+    1                           <NA>                                  <NA>
+    2                           <NA>                                  <NA>
+    3                           <NA>                                  <NA>
+      winlog.event_data.Origin winlog.event_data.ModifyingUser
+    1                     <NA>                            <NA>
+    2                     <NA>                            <NA>
+    3                     <NA>                            <NA>
+      winlog.event_data.Reason winlog.event_data.OldTime winlog.event_data.DwordVal
+    1                     <NA>                      <NA>                       <NA>
+    2                     <NA>                      <NA>                       <NA>
+    3                     <NA>                      <NA>                       <NA>
+      winlog.event_data.param6 winlog.event_data.ShutdownActionType
+    1                     <NA>                                 <NA>
+    2                     <NA>                                 <NA>
+    3                     <NA>                                 <NA>
+      winlog.event_data.ShutdownEventCode winlog.event_data.ShutdownReason
+    1                                <NA>                             <NA>
+    2                                <NA>                             <NA>
+    3                                <NA>                             <NA>
+      winlog.event_data.StopTime winlog.event_data.BootMode
+    1                       <NA>                       <NA>
+    2                       <NA>                       <NA>
+    3                       <NA>                       <NA>
+      winlog.event_data.StartTime winlog.event_data.MajorVersion
+    1                        <NA>                           <NA>
+    2                        <NA>                           <NA>
+    3                        <NA>                           <NA>
+      winlog.event_data.MinorVersion winlog.event_data.BuildVersion
+    1                           <NA>                           <NA>
+    2                           <NA>                           <NA>
+    3                           <NA>                           <NA>
+      winlog.event_data.QfeVersion winlog.event_data.ServiceVersion
+    1                         <NA>                             <NA>
+    2                         <NA>                             <NA>
+    3                         <NA>                             <NA>
+      winlog.event_data.EnableDisableReason winlog.event_data.VsmPolicy
+    1                                  <NA>                        <NA>
+    2                                  <NA>                        <NA>
+    3                                  <NA>                        <NA>
+      winlog.event_data.LastBootGood winlog.event_data.LastBootId
+    1                           <NA>                         <NA>
+    2                           <NA>                         <NA>
+    3                           <NA>                         <NA>
+      winlog.event_data.BootStatusPolicy winlog.event_data.LastShutdownGood
+    1                               <NA>                               <NA>
+    2                               <NA>                               <NA>
+    3                               <NA>                               <NA>
+      winlog.event_data.BootMenuPolicy winlog.event_data.BootType
+    1                             <NA>                       <NA>
+    2                             <NA>                       <NA>
+    3                             <NA>                       <NA>
+      winlog.event_data.LoadOptions winlog.event_data.EntryCount
+    1                          <NA>                         <NA>
+    2                          <NA>                         <NA>
+    3                          <NA>                         <NA>
+      winlog.event_data.BitlockerUserInputTime winlog.event_data.CountNew
+    1                                     <NA>                       <NA>
+    2                                     <NA>                       <NA>
+    3                                     <NA>                       <NA>
+      winlog.event_data.CountOld winlog.event_data.UpdateReason
+    1                       <NA>                           <NA>
+    2                       <NA>                           <NA>
+    3                       <NA>                           <NA>
+      winlog.event_data.EnabledNew winlog.event_data.DeviceNameLength
+    1                         <NA>                               <NA>
+    2                         <NA>                               <NA>
+    3                         <NA>                               <NA>
+      winlog.event_data.DeviceName winlog.event_data.DeviceTime
+    1                         <NA>                         <NA>
+    2                         <NA>                         <NA>
+    3                         <NA>                         <NA>
+      winlog.event_data.FinalStatus winlog.event_data.DeviceVersionMajor
+    1                          <NA>                                 <NA>
+    2                          <NA>                                 <NA>
+    3                          <NA>                                 <NA>
+      winlog.event_data.DeviceVersionMinor winlog.event_data.DriveName
+    1                                 <NA>                        <NA>
+    2                                 <NA>                        <NA>
+    3                                 <NA>                        <NA>
+      winlog.event_data.CorruptionActionState winlog.event_data.State
+    1                                    <NA>                    <NA>
+    2                                    <NA>                    <NA>
+    3                                    <NA>                    <NA>
+      winlog.event_data.MinimumPerformancePercent
+    1                                        <NA>
+    2                                        <NA>
+    3                                        <NA>
+      winlog.event_data.MaximumPerformancePercent
+    1                                        <NA>
+    2                                        <NA>
+    3                                        <NA>
+      winlog.event_data.PerformanceImplementation winlog.event_data.Group
+    1                                        <NA>                    <NA>
+    2                                        <NA>                    <NA>
+    3                                        <NA>                    <NA>
+      winlog.event_data.Number winlog.event_data.IdleStateCount
+    1                     <NA>                             <NA>
+    2                     <NA>                             <NA>
+    3                     <NA>                             <NA>
+      winlog.event_data.IdleImplementation winlog.event_data.NominalFrequency
+    1                                 <NA>                               <NA>
+    2                                 <NA>                               <NA>
+    3                                 <NA>                               <NA>
+      winlog.event_data.MinimumThrottlePercent winlog.event_data.Config
+    1                                     <NA>                     <NA>
+    2                                     <NA>                     <NA>
+    3                                     <NA>                     <NA>
+      winlog.event_data.IsTestConfig winlog.event_data.Default SD String:
+    1                           <NA>                                 <NA>
+    2                           <NA>                                 <NA>
+    3                           <NA>                                 <NA>
+      winlog.event_data.AdapterSuffixName winlog.event_data.DnsServerList
+    1                                <NA>                            <NA>
+    2                                <NA>                            <NA>
+    3                                <NA>                            <NA>
+      winlog.event_data.Sent UpdateServer winlog.event_data.Ipaddress
+    1                                <NA>                        <NA>
+    2                                <NA>                        <NA>
+    3                                <NA>                        <NA>
+      winlog.event_data.ErrorCode winlog.event_data.AdapterName
+    1                        <NA>                          <NA>
+    2                        <NA>                          <NA>
+    3                        <NA>                          <NA>
+      winlog.event_data.HostName winlog.event_data.TimeSource winlog.event_id
+    1                       <NA>                         <NA>            4703
+    2                       <NA>                         <NA>            4673
+    3                       <NA>                         <NA>              10
+                     winlog.provider_name  winlog.api winlog.record_id
+    1 Microsoft-Windows-Security-Auditing wineventlog            50588
+    2 Microsoft-Windows-Security-Auditing wineventlog           104875
+    3            Microsoft-Windows-Sysmon wineventlog           226649
+      winlog.computer_name winlog.process.pid winlog.process.id winlog.keywords
+    1      HR001.shire.com                  4              4108   Audit Success
+    2     HFDC01.shire.com                  4              5144   Audit Failure
+    3      IT001.shire.com               3220              4972            NULL
+                        winlog.provider_guid                       winlog.channel
+    1 {54849625-5478-4994-a5ba-3e3b0328c30d}                             security
+    2 {54849625-5478-4994-a5ba-3e3b0328c30d}                             Security
+    3 {5770385f-c22a-43e0-bf4c-06f5698ffbd9} Microsoft-Windows-Sysmon/Operational
+                                 winlog.task winlog.opcode winlog.version
+    1            Token Right Adjusted Events          Info             NA
+    2                Sensitive Privilege Use          Info             NA
+    3 Process accessed (rule: ProcessAccess)          Info              3
+      winlog.user.domain winlog.user.type winlog.user.identifier winlog.user.name
+    1               <NA>             <NA>                   <NA>             <NA>
+    2               <NA>             <NA>                   <NA>             <NA>
+    3       NT AUTHORITY             User               S-1-5-18           SYSTEM
+      winlog.activity_id winlog.user_data.ProcessID winlog.user_data.ProviderPath
+    1               <NA>                       <NA>                          <NA>
+    2               <NA>                       <NA>                          <NA>
+    3               <NA>                       <NA>                          <NA>
+      winlog.user_data.xml_name winlog.user_data.ProviderName winlog.user_data.Code
+    1                      <NA>                          <NA>                  <NA>
+    2                      <NA>                          <NA>                  <NA>
+    3                      <NA>                          <NA>                  <NA>
+      winlog.user_data.HostProcess winlog.user_data.Id winlog.user_data.PossibleCause
+    1                         <NA>                <NA>                           <NA>
+    2                         <NA>                <NA>                           <NA>
+    3                         <NA>                <NA>                           <NA>
+      winlog.user_data.ClientProcessId winlog.user_data.Component
+    1                             <NA>                       <NA>
+    2                             <NA>                       <NA>
+    3                             <NA>                       <NA>
+      winlog.user_data.Operation winlog.user_data.User winlog.user_data.ResultCode
+    1                       <NA>                  <NA>                        <NA>
+    2                       <NA>                  <NA>                        <NA>
+    3                       <NA>                  <NA>                        <NA>
+      winlog.user_data.ClientMachine winlog.user_data.SessionID winlog.user_data.ESS
+    1                           <NA>                       <NA>                 <NA>
+    2                           <NA>                       <NA>                 <NA>
+    3                           <NA>                       <NA>                 <NA>
+      winlog.user_data.CONSUMER winlog.user_data.Namespace winlog.user_data.Processid
+    1                      <NA>                       <NA>                       <NA>
+    2                      <NA>                       <NA>                       <NA>
+    3                      <NA>                       <NA>                       <NA>
+      winlog.user_data.NamespaceName winlog.user_data.Query winlog.user_data.Provider
+    1                           <NA>                   <NA>                      <NA>
+    2                           <NA>                   <NA>                      <NA>
+    3                           <NA>                   <NA>                      <NA>
+      winlog.user_data.queryid winlog.user_data.Session winlog.user_data.Reason
+    1                     <NA>                     <NA>                    <NA>
+    2                     <NA>                     <NA>                    <NA>
+    3                     <NA>                     <NA>                    <NA>
+      winlog.user_data.Address winlog.user_data.messageName
+    1                     <NA>                         <NA>
+    2                     <NA>                         <NA>
+    3                     <NA>                         <NA>
+      winlog.user_data.ListenerName winlog.user_data.Class
+    1                          <NA>                   <NA>
+    2                          <NA>                   <NA>
+    3                          <NA>                   <NA>
+      winlog.user_data.listenerName version      name
+    1                          <NA>   1.1.0 WECServer
+    2                          <NA>   1.1.0 WECServer
+    3                          <NA>   1.1.0 WECServer
+                        agent.ephemeral_id agent.hostname
+    1 b372be1f-ba0a-4d7e-b4df-79eac86e1fde      WECServer
+    2 b372be1f-ba0a-4d7e-b4df-79eac86e1fde      WECServer
+    3 b372be1f-ba0a-4d7e-b4df-79eac86e1fde      WECServer
+                                  agent.id agent.version agent.type
+    1 d347d9a4-bff4-476c-b5a4-d51119f78250         7.4.0 winlogbeat
+    2 d347d9a4-bff4-476c-b5a4-d51119f78250         7.4.0 winlogbeat
+    3 d347d9a4-bff4-476c-b5a4-d51119f78250         7.4.0 winlogbeat
+     [ reached 'max' / getOption("max.print") -- omitted 3 rows ]
+    > str(log_data, max.level = 2)
+    'data.frame':   101904 obs. of  9 variables:
+     $ @timestamp: chr  "2019-10-20T20:11:06.937Z" "2019-10-20T20:11:07.101Z" "2019-10-20T20:11:09.052Z" "2019-10-20T20:11:10.985Z" ...
+     $ @metadata :'data.frame': 101904 obs. of  4 variables:
+      ..$ beat   : chr  "winlogbeat" "winlogbeat" "winlogbeat" "winlogbeat" ...
+      ..$ type   : chr  "_doc" "_doc" "_doc" "_doc" ...
+      ..$ version: chr  "7.4.0" "7.4.0" "7.4.0" "7.4.0" ...
+      ..$ topic  : chr  "winlogbeat" "winlogbeat" "winlogbeat" "winlogbeat" ...
+     $ event     :'data.frame': 101904 obs. of  4 variables:
+      ..$ created: chr  "2019-10-20T20:11:09.988Z" "2019-10-20T20:11:09.988Z" "2019-10-20T20:11:11.995Z" "2019-10-20T20:11:14.013Z" ...
+      ..$ kind   : chr  "event" "event" "event" "event" ...
+      ..$ code   : int  4703 4673 10 10 10 10 11 10 10 10 ...
+      ..$ action : chr  "Token Right Adjusted Events" "Sensitive Privilege Use" "Process accessed (rule: ProcessAccess)" "Process accessed (rule: ProcessAccess)" ...
+     $ log       :'data.frame': 101904 obs. of  1 variable:
+      ..$ level: chr  "information" "information" "information" "information" ...
+     $ message   : chr  "A token right was adjusted.\n\nSubject:\n\tSecurity ID:\t\tS-1-5-18\n\tAccount Name:\t\tHR001$\n\tAccount Domai"| __truncated__ "A privileged service was called.\n\nSubject:\n\tSecurity ID:\t\tS-1-5-19\n\tAccount Name:\t\tLOCAL SERVICE\n\tA"| __truncated__ "Process accessed:\nRuleName: \nUtcTime: 2019-10-20 20:11:09.052\nSourceProcessGUID: {a158f72c-afec-5dac-0000-00"| __truncated__ "Process accessed:\nRuleName: \nUtcTime: 2019-10-20 20:11:10.985\nSourceProcessGUID: {a158f72c-afe7-5dac-0000-00"| __truncated__ ...
+     $ winlog    :'data.frame': 101904 obs. of  16 variables:
+      ..$ event_data   :'data.frame':   101904 obs. of  234 variables:
+      ..$ event_id     : int  4703 4673 10 10 10 10 11 10 10 10 ...
+      ..$ provider_name: chr  "Microsoft-Windows-Security-Auditing" "Microsoft-Windows-Security-Auditing" "Microsoft-Windows-Sysmon" "Microsoft-Windows-Sysmon" ...
+      ..$ api          : chr  "wineventlog" "wineventlog" "wineventlog" "wineventlog" ...
+      ..$ record_id    : int  50588 104875 226649 153525 163488 153526 134651 226650 226651 226652 ...
+      ..$ computer_name: chr  "HR001.shire.com" "HFDC01.shire.com" "IT001.shire.com" "HR001.shire.com" ...
+      ..$ process      :'data.frame':   101904 obs. of  2 variables:
+      ..$ keywords     :List of 101904
+      ..$ provider_guid: chr  "{54849625-5478-4994-a5ba-3e3b0328c30d}" "{54849625-5478-4994-a5ba-3e3b0328c30d}" "{5770385f-c22a-43e0-bf4c-06f5698ffbd9}" "{5770385f-c22a-43e0-bf4c-06f5698ffbd9}" ...
+      ..$ channel      : chr  "security" "Security" "Microsoft-Windows-Sysmon/Operational" "Microsoft-Windows-Sysmon/Operational" ...
+      ..$ task         : chr  "Token Right Adjusted Events" "Sensitive Privilege Use" "Process accessed (rule: ProcessAccess)" "Process accessed (rule: ProcessAccess)" ...
+      ..$ opcode       : chr  "Info" "Info" "Info" "Info" ...
+      ..$ version      : int  NA NA 3 3 3 3 2 3 3 3 ...
+      ..$ user         :'data.frame':   101904 obs. of  4 variables:
+      ..$ activity_id  : chr  NA NA NA NA ...
+      ..$ user_data    :'data.frame':   101904 obs. of  30 variables:
+     $ ecs       :'data.frame': 101904 obs. of  1 variable:
+      ..$ version: chr  "1.1.0" "1.1.0" "1.1.0" "1.1.0" ...
+     $ host      :'data.frame': 101904 obs. of  1 variable:
+      ..$ name: chr  "WECServer" "WECServer" "WECServer" "WECServer" ...
+     $ agent     :'data.frame': 101904 obs. of  5 variables:
+      ..$ ephemeral_id: chr  "b372be1f-ba0a-4d7e-b4df-79eac86e1fde" "b372be1f-ba0a-4d7e-b4df-79eac86e1fde" "b372be1f-ba0a-4d7e-b4df-79eac86e1fde" "b372be1f-ba0a-4d7e-b4df-79eac86e1fde" ...
+      ..$ hostname    : chr  "WECServer" "WECServer" "WECServer" "WECServer" ...
+      ..$ id          : chr  "d347d9a4-bff4-476c-b5a4-d51119f78250" "d347d9a4-bff4-476c-b5a4-d51119f78250" "d347d9a4-bff4-476c-b5a4-d51119f78250" "d347d9a4-bff4-476c-b5a4-d51119f78250" ...
+      ..$ version     : chr  "7.4.0" "7.4.0" "7.4.0" "7.4.0" ...
+      ..$ type        : chr  "winlogbeat" "winlogbeat" "winlogbeat" "winlogbeat" ...
+    > determine_type <- function(x) {
+    + if (is.numeric(x)) {
+    + return("numeric")
+    + } else if (is.logical(x)) {
+    + return("logical")
+    + } else if (is.character(x)) {
+    + date_test <- try(as.POSIXct(x, optional = TRUE), silent = TRUE)
+    + if (!inherits(date_test, "try-error") && !all(is.na(date_test))) {
+    + return("POSIXct")
+    + } else {
+    + return("character")
+    + }
+    + } else {
+    + return(typeof(x))
+    + }
+    + }
+    > col_types <- map_chr(log_data, determine_type)
+    > log_data_clean <- log_data
+    > for (col in names(col_types)) {
+    + if (col_types[col] == "POSIXct") {
+    + log_data_clean[[col]] <- as.POSIXct(log_data_clean[[col]], optional = TRUE)
+    + } else if (col_types[col] == "numeric") {
+    + log_data_clean[[col]] <- as.numeric(log_data_clean[[col]])
+    + } else if (col_types[col] == "logical") {
+    + log_data_clean[[col]] <- as.logical(log_data_clean[[col]])
+    + }
+    + }
+    > 
+    > glimpse(log_data_clean)
+    Rows: 101,904
+    Columns: 9
+    $ `@timestamp` <dttm> 2019-10-20, 2019-10-20, 2019-10-20, 2019-10-20, 2019-10-20,…
+    $ `@metadata`  <df[,4]> <data.frame[27 x 4]>
+    $ event        <df[,4]> <data.frame[27 x 4]>
+    $ log          <df[,1]> <data.frame[27 x 1]>
+    $ message      <chr> "A token right was adjusted.\n\nSubject:\n\tSecurity ID:\…
+    $ winlog       <df[,16]> <data.frame[27 x 16]>
+    $ ecs          <df[,1]> <data.frame[27 x 1]>
+    $ host         <df[,1]> <data.frame[27 x 1]>
+    $ agent        <df[,5]> <data.frame[27 x 5]>
+    > 
+    > # 1 Раскройте датафрейм избавившись от вложенных датафреймов
+    > is_nested_df <- function(x) {
+    + is.data.frame(x) || is.list(x)
+    + }
+    > nested_cols <- names(log_data_clean)[map_lgl(log_data_clean, is_nested_df)]
+    > cat("Вложенные столбцы:", nested_cols, "\n")
+    Вложенные столбцы: @metadata event log winlog ecs host agent 
+    > for (col in nested_cols) {
+    + if (col %in% names(log_data_clean) && nrow(log_data_clean) > 0) {
+    + log_data_clean <- log_data_clean %>%
+    + unnest(cols = all_of(col), names_sep = paste0("_", col, "_"))
+    + }
+    + }
+    > 
+    > glimpse(log_data_clean)
+    Rows: 101,904
+    Columns: 34
+    $ `@timestamp`                  <dttm> 2019-10-20, 2019-10-20, 2019-10-20, 2019-1…
+    $ `@metadata_@metadata_beat`    <chr> "winlogbeat", "winlogbeat", "winlogbeat", "…
+    $ `@metadata_@metadata_type`    <chr> "_doc", "_doc", "_doc", "_doc", "_doc", "_d…
+    $ `@metadata_@metadata_version` <chr> "7.4.0", "7.4.0", "7.4.0", "7.4.0", "7.4.0"…
+    $ `@metadata_@metadata_topic`   <chr> "winlogbeat", "winlogbeat", "winlogbeat", "…
+    $ event_event_created           <chr> "2019-10-20T20:11:09.988Z", "2019-10-20T20:…
+    $ event_event_kind              <chr> "event", "event", "event", "event", "event"…
+    $ event_event_code              <int> 4703, 4673, 10, 10, 10, 10, 11, 10, 10, 10,…
+    $ event_event_action            <chr> "Token Right Adjusted Events", "Sensitive P…
+    $ log_log_level                 <chr> "information", "information", "information"…
+    $ message                       <chr> "A token right was adjusted.\n\nSubject:\n\…
+    $ winlog_winlog_event_data      <df[,234]> <data.frame[27 x 234]>
+    $ winlog_winlog_event_id        <int> 4703, 4673, 10, 10, 10, 10, 11, 10, 10…
+    $ winlog_winlog_provider_name   <chr> "Microsoft-Windows-Security-Auditing", "Mic…
+    $ winlog_winlog_api             <chr> "wineventlog", "wineventlog", "wineventlog"…
+    $ winlog_winlog_record_id       <int> 50588, 104875, 226649, 153525, 163488, 1535…
+    $ winlog_winlog_computer_name   <chr> "HR001.shire.com", "HFDC01.shire.com", "IT0…
+    $ winlog_winlog_process         <df[,2]> <data.frame[27 x 2]>
+    $ winlog_winlog_keywords        <list> "Audit Success", "Audit Failure", <NULL>, <…
+    $ winlog_winlog_provider_guid   <chr> "{54849625-5478-4994-a5ba-3e3b0328c30d}"…
+    $ winlog_winlog_channel         <chr> "security", "Security", "Microsoft-Windows…
+    $ winlog_winlog_task            <chr> "Token Right Adjusted Events", "Sensitive P…
+    $ winlog_winlog_opcode          <chr> "Info", "Info", "Info", "Info", "Info", "In…
+    $ winlog_winlog_version         <int> NA, NA, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3,…
+    $ winlog_winlog_user            <df[,4]> <data.frame[27 x 4]>
+    $ winlog_winlog_activity_id     <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+    $ winlog_winlog_user_data       <df[,30]> <data.frame[27 x 30]>
+    $ ecs_ecs_version               <chr> "1.1.0", "1.1.0", "1.1.0", "1.1.0", "1.1.0"…
+    $ host_host_name                <chr> "WECServer", "WECServer", "WECServer", "…
+    $ agent_agent_ephemeral_id      <chr> "b372be1f-ba0a-4d7e-b4df-79eac86e1fde", "b3…
+    $ agent_agent_hostname          <chr> "WECServer", "WECServer", "WECServer", …
+    $ agent_agent_id                <chr> "d347d9a4-bff4-476c-b5a4-d51119f78250", "d3…
+    $ agent_agent_version           <chr> "7.4.0", "7.4.0", "7.4.0", "7.4.0", "7.4.0"…
+    $ agent_agent_type              <chr> "winlogbeat", "winlogbeat", "winlogbeat", "…
+    > 
+    > # 2 Минимизируйте количество колонок в датафрейме – уберите колоки с единственным значением параметра
+    > single_value_cols <- function(df) {
+    + single_val_cols <- c()
+    + for (col in names(df)) {
+    + unique_vals <- unique(df[[col]])
+    + na_count <- sum(is.na(unique_vals))
+    + unique_non_na <- unique_vals[!is.na(unique_vals)]
+    + if (length(unique_non_na) <= 1) {
+    + single_val_cols <- c(single_val_cols, col)
+    + }
+    + }
+    + return(single_val_cols)
+    + }
+    > 
+    > cols_to_remove <- single_value_cols(log_data_clean)
+    > 
+    > 
+    > cat("Столбцы с одним значением для удаления:", cols_to_remove, "\n")
+    Столбцы с одним значением для удаления: @timestamp @metadata_@metadata_beat @metadata_@metadata_type @metadata_@metadata_version @metadata_@metadata_topic event_event_kind winlog_winlog_api ecs_ecs_version host_host_name agent_agent_ephemeral_id agent_agent_hostname agent_agent_id agent_agent_version agent_agent_type 
+    > if (length(cols_to_remove) > 0) {
+    + log_data_clean <- log_data_clean %>%
+    + select(-all_of(cols_to_remove))
+    + }
+    > cat("Размерность после удаления столбцов:", dim(log_data_clean), "\n")
+    Размерность после удаления столбцов: 101904 20 
+    > # 3 Какое количество хостов представлено в данном датасете?
+    > host_columns <- grep("host|computer|system|device", names(log_data_clean),
+    + ignore.case = TRUE, value = TRUE)
+    > cat("Возможные столбцы с информацией о хостах:", host_columns, "\n")
+    Возможные столбцы с информацией о хостах: winlog_winlog_computer_name 
+    > for (col in host_columns) {
+    + unique_hosts <- unique(log_data_clean[[col]])
+    + unique_hosts <- unique_hosts[!is.na(unique_hosts)]
+    + cat("Столбец", col, "содержит", length(unique_hosts), "уникальных значений\n")
+    + }
+    Столбец winlog_winlog_computer_name содержит 5 уникальных значений
+    > if ("host" %in% names(log_data_clean)) {
+    + host_col <- "host"
+    + } else if (length(host_columns) > 0) {
+    + host_col <- host_columns[1]
+    + } else {
+    + host_col <- grep("source|origin", names(log_data_clean), 
+    + ignore.case = TRUE, value = TRUE)[1]
+    + }
+    > if (!is.null(host_col) && !is.na(host_col)) {
+    + unique_hosts <- log_data_clean %>%
+    + filter(!is.na(.data[[host_col]])) %>%
+    + distinct(.data[[host_col]]) %>%
+    + nrow()
+    + cat("Количество уникальных хостов в датасете:", unique_hosts, "\n")
+    + } else {
+    + cat("Не удалось определить столбец с информацией о хостах\n")
+    + }
+    Количество уникальных хостов в датасете: 5 
+    > # 4 Подготовьте датафрейм с расшифровкой Windows Event_ID, приведите типы данных к типу их значений.
+    > 
+    > 
+    > event_id_cols <- grep("event.*id|id.*event", names(log_data_clean),
+    + ignore.case = TRUE, value = TRUE)
+    > cat("Столбцы, содержащие Event ID:", event_id_cols, "\n")
+    Столбцы, содержащие Event ID: winlog_winlog_event_id 
+    > if ("EventID" %in% names(log_data_clean)) {
+    + event_col <- "EventID"
+    + } else if ("event_id" %in% names(log_data_clean)) {
+    + event_col <- "event_id"
+    + } else if (length(event_id_cols) > 0) {
+    + event_col <- event_id_cols[1]
+    + } else {
+    + numeric_cols <- names(log_data_clean)[map_lgl(log_data_clean, is.numeric)]
+    + event_col <- numeric_cols[1]
+    + }
+    > if (!is.null(event_col)) {
+    + event_summary <- log_data_clean %>%
+    + filter(!is.na(.data[[event_col]])) %>%
+    + group_by(Event_ID = .data[[event_col]]) %>%
+    + summarise(
+    + Count = n(),
+    + First_Occurrence = min(ifelse("Timestamp" %in% names(.), 
+    + .data$Timestamp, 
+    + Sys.time()), na.rm = TRUE),
+    + Last_Occurrence = max(ifelse("Timestamp" %in% names(.),
+    + .data$Timestamp, 
+    + Sys.time()), na.rm = TRUE)
+    + ) %>%
+    + arrange(desc(Count))
+    + cat("Топ-10 самых частых событий:\n")
+    + print(head(event_summary, 10))
+    + if ("Event.ID" %in% names(event_df)) {
+    + event_df$Event.ID <- as.numeric(as.character(event_df$Event.ID))
+    + }
+    + event_summary_decoded <- event_summary %>%
+    + left_join(event_df, by = c("Event_ID" = "Event.ID"))
+    + cat("\nРасшифрованные события (первые 10):\n")
+    + print(head(event_summary_decoded, 10))
+    + write_csv(event_summary_decoded, "event_summary_decoded.csv")
+    + cat("\nДатафрейм с расшифровкой сохранен в файл: event_summary_decoded.csv\n")
+    + }
+    Топ-10 самых частых событий:
+    # A tibble: 10 × 4
+       Event_ID Count First_Occurrence Last_Occurrence
+          <int> <int>            <dbl>           <dbl>
+     1       10 36074      1764942663.     1764942663.
+     2      800 12342      1764942663.     1764942663.
+     3     4103 12166      1764942663.     1764942663.
+     4     4105 11456      1764942663.     1764942663.
+     5     4106 11456      1764942663.     1764942663.
+     6       12  6354      1764942663.     1764942663.
+     7        7  5937      1764942663.     1764942663.
+     8     4703   809      1764942663.     1764942663.
+     9     5156   756      1764942663.     1764942663.
+    10        3   582      1764942663.     1764942663.
+    Error in `left_join()`:
+    ! Join columns in `y` must be present in the data.
+    ✖ Problem with `Event.ID`.
+    Run `rlang::last_trace()` to see where the error occurred.
+
+    > 
+    > # 5 Есть ли в логе события с высоким и средним уровнем значимости? Сколько их?
+    > level_cols <- grep("level|severity|importance|priority", 
+    + names(event_summary_decoded), 
+    + ignore.case = TRUE, value = TRUE)
+    Ошибка: объект 'event_summary_decoded' не найден
+
+    > ls()
+     [1] "ap_beacon_rate"            "ap_by_uptime"             
+     [3] "ap_clean"                  "ap_data"                  
+     [5] "ap_indices"                "ap_sessions"              
+     [7] "ap_with_manufacturer"      "ap_with_oui"              
+     [9] "client_clean"              "client_clusters"          
+    [11] "client_data"               "client_indices"           
+    [13] "client_manufacturer_stats" "client_start_line"        
+    [15] "client_with_oui"           "col"                      
+    [17] "col_types"                 "cols_to_remove"           
+    [19] "data_url"                  "dataset_url"              
+    [21] "determine_type"            "event_col"                
+    [23] "event_df"                  "event_id_cols"            
+    [25] "event_summary"             "fastest_ap"               
+    [27] "get_oui"                   "host_col"                 
+    [29] "host_columns"              "insecure_ap"              
+    [31] "is_nested_df"              "json_files"               
+    [33] "log_data"                  "log_data_clean"           
+    [35] "longest_sessions"          "manufacturer_db"          
+    [37] "merge_sessions"            "my_char"                  
+    [39] "my_data"                   "my_div"                   
+    [41] "my_na"                     "my_name"                  
+    [43] "my_seq"                    "my_sqrt"                  
+    [45] "nested_cols"               "non_randomized_clients"   
+    [47] "num_vect"                  "old.dir"                  
+    [49] "parse_airodump_time"       "raw_data"                 
+    [51] "raw_lines"                 "security_summary"         
+    [53] "single_value_cols"         "stable_clusters"          
+    [55] "tables"                    "temp_dir"                 
+    [57] "tf"                        "top_manufacturers_ap"     
+    [59] "top_manufacturers_client"  "unique_hosts"             
+    [61] "webpage"                   "webpage_url"              
+    [63] "wpa3_ap"                   "wpa3_devices"             
+    [65] "x"                         "y"                        
+    [67] "z"                        
+    > 
+    > cat("Структура event_summary:\n")
+    Структура event_summary:
+    > print(str(event_summary, max.level = 1))
+    tibble [109 × 4] (S3: tbl_df/tbl/data.frame)
+    NULL
+    > print(head(event_summary))
+    # A tibble: 6 × 4
+      Event_ID Count First_Occurrence Last_Occurrence
+         <int> <int>            <dbl>           <dbl>
+    1       10 36074      1764942663.     1764942663.
+    2      800 12342      1764942663.     1764942663.
+    3     4103 12166      1764942663.     1764942663.
+    4     4105 11456      1764942663.     1764942663.
+    5     4106 11456      1764942663.     1764942663.
+    6       12  6354      1764942663.     1764942663.
+    > cat("\nСтруктура event_df:\n")
+
+    Структура event_df:
+    > print(str(event_df, max.level = 1))
+    tibble [381 × 4] (S3: tbl_df/tbl/data.frame)
+    NULL
+    > print(head(event_df))
+    # A tibble: 6 × 4
+      Current.Windows.Even…¹ Legacy.Windows.Event…² Potential.Criticality Event.Summary
+      <chr>                  <chr>                  <chr>                 <chr>        
+    1 4618                   N/A                    High                  A monitored …
+    2 4649                   N/A                    High                  A replay att…
+    3 4719                   612                    High                  System audit…
+    4 4765                   N/A                    High                  SID History …
+    5 4766                   N/A                    High                  An attempt t…
+    6 4794                   N/A                    High                  An attempt w…
+    # ℹ abbreviated names: ¹​Current.Windows.Event.ID, ²​Legacy.Windows.Event.ID
+    > 
+    > cat("\nНазвания столбцов в event_df:\n")
+
+    Названия столбцов в event_df:
+    > print(names(event_df))
+    [1] "Current.Windows.Event.ID" "Legacy.Windows.Event.ID" 
+    [3] "Potential.Criticality"    "Event.Summary"           
+    > cat("Создаем event_summary_decoded...\n")
+    Создаем event_summary_decoded...
+    > event_summary$Event_ID <- as.numeric(event_summary$Event_ID)
+    > event_df$Current.Windows.Event.ID <- as.numeric(as.character(event_df$Current.Windows.Event.ID))
+    Предупреждение:
+    в результате преобразования созданы NA 
+
+    > event_summary_decoded <- event_summary %>%
+    + left_join(event_df, by = c("Event_ID" = "Current.Windows.Event.ID"))
+    > cat("Размерность event_summary_decoded:", dim(event_summary_decoded), "\n")
+    Размерность event_summary_decoded: 109 7 
+    > cat("Столбцы event_summary_decoded:", names(event_summary_decoded), "\n")
+    Столбцы event_summary_decoded: Event_ID Count First_Occurrence Last_Occurrence Legacy.Windows.Event.ID Potential.Criticality Event.Summary 
+    > cat("\nПервые 5 строк event_summary_decoded:\n")
+
+    Первые 5 строк event_summary_decoded:
+    > print(head(event_summary_decoded, 5))
+    # A tibble: 5 × 7
+      Event_ID Count First_Occurrence Last_Occurrence Legacy.Windows.Event.ID
+         <dbl> <int>            <dbl>           <dbl> <chr>                  
+    1       10 36074      1764942663.     1764942663. NA                     
+    2      800 12342      1764942663.     1764942663. NA                     
+    3     4103 12166      1764942663.     1764942663. NA                     
+    4     4105 11456      1764942663.     1764942663. NA                     
+    5     4106 11456      1764942663.     1764942663. NA                     
+    # ℹ 2 more variables: Potential.Criticality <chr>, Event.Summary <chr>
+    > if (sum(!is.na(event_summary_decoded$Potential.Criticality)) == 0) {
+    + cat("\nПопробуем объединить по Legacy.Windows.Event.ID...\n")
+    + event_df$Legacy.Windows.Event.ID <- as.numeric(as.character(event_df$Legacy.Windows.Event.ID))
+    + event_summary_decoded_legacy <- event_summary %>%
+    + left_join(event_df, by = c("Event_ID" = "Legacy.Windows.Event.ID"))
+    + legacy_matches <- sum(!is.na(event_summary_decoded_legacy$Potential.Criticality))
+    + cat("Найдено совпадений по Legacy ID:", legacy_matches, "\n")
+    + if (legacy_matches > 0) {
+    + event_summary_decoded <- event_summary_decoded_legacy
+    + }
+    + }
+    > assign("event_summary_decoded", event_summary_decoded, envir = .GlobalEnv)
+    > cat("\nОбъект event_summary_decoded создан и сохранен!\n")
+
+    Объект event_summary_decoded создан и сохранен!
+    > cat("\n=== АНАЛИЗ УРОВНЕЙ ЗНАЧИМОСТИ ===\n")
+
+    === АНАЛИЗ УРОВНЕЙ ЗНАЧИМОСТИ ===
+    > if ("Potential.Criticality" %in% names(event_summary_decoded)) {
+    + cat("Найден столбец с уровнями значимости: Potential.Criticality\n")
+    + cat("Уникальные значения уровней значимости:\n")
+    + print(table(event_summary_decoded$Potential.Criticality, useNA = "always"))
+    + high_events <- event_summary_decoded %>%
+    + filter(!is.na(Potential.Criticality) & 
+    + grepl("high|critical", Potential.Criticality, ignore.case = TRUE))
+    + medium_events <- event_summary_decoded %>%
+    + filter(!is.na(Potential.Criticality) & 
+    + grepl("medium|warning", Potential.Criticality, ignore.case = TRUE))
+    + low_events <- event_summary_decoded %>%
+    + filter(!is.na(Potential.Criticality) & 
+    + grepl("low|info", Potential.Criticality, ignore.case = TRUE))
+    + high_count <- nrow(high_events)
+    + medium_count <- nrow(medium_events)
+    + low_count <- nrow(low_events)
+    + na_count <- sum(is.na(event_summary_decoded$Potential.Criticality))
+    + cat("\n=== РЕЗУЛЬТАТЫ ===\n")
+    + cat("Всего уникальных событий в логе:", nrow(event_summary_decoded), "\n")
+    + cat("Событий с ВЫСОКИМ уровнем значимости:", high_count, "\n")
+    + cat("Событий со СРЕДНИМ уровнем значимости:", medium_count, "\n")
+    + cat("Событий с НИЗКИМ уровнем значимости:", low_count, "\n")
+    + cat("Событий без указания уровня (NA):", na_count, "\n")
+    + assign("high_count", high_count, envir = .GlobalEnv)
+    + assign("medium_count", medium_count, envir = .GlobalEnv)
+    + if (high_count > 0) {
+    + cat("\nПримеры событий с ВЫСОКИМ уровнем:\n")
+    + print(high_events %>% 
+    + select(Event_ID, Count, Potential.Criticality, Event.Summary) %>%
+    + head(5))
+    + }
+    + if (medium_count > 0) {
+    + cat("\nПримеры событий со СРЕДНИМ уровнем:\n")
+    + print(medium_events %>% 
+    + select(Event_ID, Count, Potential.Criticality, Event.Summary) %>%
+    + head(5))
+    + }
+    + } else {
+    + cat("Столбец Potential.Criticality не найден в event_summary_decoded\n")
+    + cat("Доступные столбцы:", names(event_summary_decoded), "\n")
+    + level_cols <- grep("level|severity|importance|priority|critical",
+    + names(event_summary_decoded),
+    + ignore.case = TRUE, value = TRUE)
+    + if (length(level_cols) > 0) {
+    + cat("Найдены возможные столбцы с уровнями:", level_cols, "\n")
+    + } else {
+    + cat("Столбцы с информацией об уровне значимости не найдены.\n")
+    + cat("\nИспользуем альтернативный подход по кодам событий...\n")
+    + critical_events <- c(4625, 4648, 4672, 4697, 4702, 4719, 4720, 
+    + 4722, 4723, 4724, 4725, 4726, 4732, 4738, 
+    + 4740, 4755, 4756, 4767, 4799)
+    + medium_events <- c(4624, 4634, 4647, 4656, 4661, 4662, 4663, 
+    + 4670, 4673, 4688, 4690, 4691, 4698, 4704, 
+    + 4705, 4716, 4717, 4718, 4735, 4737)
+    + high_events_in_log <- event_summary %>%
+    + filter(Event_ID %in% critical_events)
+    + medium_events_in_log <- event_summary %>%
+    + filter(Event_ID %in% medium_events)
+    + high_count <- nrow(high_events_in_log)
+    + medium_count <- nrow(medium_events_in_log)
+    + cat("\nАнализ по известным кодам событий:\n")
+    + cat("Критических событий (high):", high_count, "\n")
+    + cat("Событий средней важности (medium):", medium_count, "\n")
+    + assign("high_count", high_count, envir = .GlobalEnv)
+    + assign("medium_count", medium_count, envir = .GlobalEnv)
+    + }
+    + }
+    Найден столбец с уровнями значимости: Potential.Criticality
+    Уникальные значения уровней значимости:
+
+     Low <NA> 
+      25   84 
+
+    === РЕЗУЛЬТАТЫ ===
+    Всего уникальных событий в логе: 109 
+    Событий с ВЫСОКИМ уровнем значимости: 0 
+    Событий со СРЕДНИМ уровнем значимости: 0 
+    Событий с НИЗКИМ уровнем значимости: 25 
+    Событий без указания уровня (NA): 84 
+
+## Оценка результата
+
+В результате лабораторной работы мы изучили структуру журнала системы
+Windows Active Directory , закрепили навыки исследования данных журнала
+Windows Active Directory
+
+## Вывод
+
+Таким образом, мы изучили структуру журнала системы Windows Active
+Directory , закрепили навыки исследования данных журнала Windows Active
+Directory

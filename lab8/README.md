@@ -125,7 +125,7 @@ sessionInfo()
 
 ![](img/13.png)
 
-Ссылка на итоговый дашборд https://datalens.yandex/j34qsc12ndre3
+[Ссылка на итоговый дашборд](https://datalens.yandex/j34qsc12ndre3)
 
 ## Оценка результата
 
